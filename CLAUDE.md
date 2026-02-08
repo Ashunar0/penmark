@@ -177,21 +177,61 @@ folio-v3 では React + Vite + Hono で SPA を構築し、Next.js が裏でや�
 - ログインフォームは HTML form + Server Actions（react-hook-form 不要）
 - Vercel は GitHub 連携（自動デプロイ）
 
-### Phase 2 で次にやること
+### Phase 2 完了（2026-02-08）
 
-**公開ページ（記事一覧, 記事詳細, Markdown 表示）+ ダミーデータ**
+- [x] ダミー記事データを Supabase に投入（published 2件 + draft 1件）
+- [x] 記事一覧ページ（`/articles`）— ISR（revalidate = 3600）
+- [x] 記事詳細ページ（`/articles/[slug]`）— ISR + generateStaticParams
+- [x] Markdown → HTML 変換（unified: remark-parse → remark-gfm → remark-rehype → rehype-stringify）
+- [x] シンタックスハイライト（rehype-pretty-code + Shiki, github-dark テーマ）
+- [x] ISR の再検証を本番（Vercel）で確認（`x-vercel-cache: HIT` 確認済み）
 
-- [ ] ダミー記事データを Supabase に投入
-- [ ] 記事一覧ページ（`/articles`）— ISR
-- [ ] 記事詳細ページ（`/articles/[slug]`）— ISR
-- [ ] Markdown → HTML 変換（unified: remark + rehype）
-- [ ] シンタックスハイライト
-- [ ] ISR の再検証を本番（Vercel）で確認
+### Phase 2 での設計判断（詳細は学びの記録を参照）
 
-**Phase 2 の学びの核:**
-- SSG/ISR の使い分け（判断基準を要件ベースで語れるようにする）
-- RSC 境界設計（Server Component と Client Component の境界をどこに引くか）
-- ISR は Vercel 上で再検証を実際に確認する（ローカルでは完全に検証できない）
+- ISR: time-based（revalidate=3600）。Phase 3 で on-demand に切り替え予定（ADR-005）
+- generateStaticParams: 使う（記事数が少ないのでビルド時に全ページ生成）
+- RSC 境界: ページ全体 Server Component、タグフィルタのみ将来 Client Component
+- Markdown 処理: unified パイプライン、Server Component 内で完結（パーサーをクライアントに送らない）
+- シンタックスハイライト: rehype-pretty-code（Shiki）を選択（VS Code テーマが使える、見た目の質を重視）
+
+### Phase 2 で遭遇したトラブルと学び
+
+1. **`generateStaticParams` で `cookies()` エラー** — ビルド時にはリクエストがないので `cookies()` が使えない。plain な Supabase クライアントを使う
+2. **Tailwind v4 の `prose` が効かない** — `.next/` キャッシュが古い。プラグイン追加後はキャッシュ削除して再起動
+3. **ISR が効かない（`x-vercel-cache: MISS` が続く）** — `cookies()` を使うと Next.js がページを動的と判断し ISR を無効にする。公開ページでは `createPublicClient()`（Cookie 不要）を使う
+
+### Phase 2 で追加されたファイル構成
+
+```
+src/
+├── lib/
+│   ├── types.ts              # Article 型定義
+│   ├── markdown.ts           # unified パイプライン（Markdown → HTML）
+│   └── supabase/
+│       ├── client.ts         # ブラウザ用（既存）
+│       ├── server.ts         # 認証が必要なページ用（既存）
+│       └── public.ts         # 公開ページ用（Cookie 不要、ISR 対応）← NEW
+├── app/
+│   ├── articles/
+│   │   ├── page.tsx          # 記事一覧（ISR）← NEW
+│   │   └── [slug]/
+│   │       └── page.tsx      # 記事詳細（ISR + generateStaticParams）← NEW
+```
+
+### Phase 3 で次にやること
+
+**エディタ（記事作成・編集, Markdown プレビュー, 下書き/公開管理）**
+
+- [ ] 記事作成ページ（`/editor`）— CSR
+- [ ] 記事編集ページ（`/editor/[id]`）— CSR
+- [ ] Markdown エディタ + リアルタイムプレビュー
+- [ ] 下書き / 公開のステータス管理
+- [ ] ISR の on-demand revalidation（記事公開時にトリガー）
+
+**Phase 3 の学びの核:**
+- CSR（Client Component 設計）— folio-v3 でやった CRUD と本質は同じだが、Server/Client の境界を意識
+- on-demand revalidation — エディタから記事公開時に `revalidatePath()` で ISR をトリガー
+- 認証ガード — エディタページは管理者のみアクセス可能にする
 
 ---
 
