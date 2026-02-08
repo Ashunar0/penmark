@@ -155,16 +155,43 @@ folio-v3 では React + Vite + Hono で SPA を構築し、Next.js が裏でや�
 
 ## セッション引き継ぎ
 
-### Phase 1 開始前
+### Phase 1 完了（2026-02-08）
 
 - [x] 要件定義書作成（`/Users/a.kawanobe/brain/docs/md-blog-requirements.md`）
 - [x] プロジェクトディレクトリ作成（`/Users/a.kawanobe/dev/prd/penmark/`）
 - [x] git init
 - [x] CLAUDE.md 作成
-- [ ] Next.js セットアップ
-- [ ] Supabase 接続 + DB スキーマ
-- [ ] 認証（管理者ログイン）
-- [ ] Vercel デプロイ
+- [x] Next.js 16 セットアップ（App Router, TypeScript, Tailwind CSS, Turbopack, src/, pnpm）
+- [x] Supabase プロジェクト作成（東京リージョン, プロジェクトID: `ehikehskqqnjsxczpamf`）
+- [x] DB スキーマ: articles テーブル + RLS（profiles テーブルは YAGNI で不採用）
+- [x] 認証: Email + Password, Server Actions, Cookie ベース
+- [x] Vercel デプロイ（GitHub 連携: https://github.com/Ashunar0/penmark）
+
+### Phase 1 での設計判断（詳細は学びの記録を参照）
+
+- Docker ではなくクラウド Supabase（Vercel との接続、個人開発の規模）
+- profiles テーブル・author_id 不要（管理者1人、YAGNI）
+- RLS: published は誰でも SELECT 可、draft と書き込みは認証済みのみ
+- status カラムは ENUM 型
+- 認証処理に Server Actions（Cookie 同期がシンプル）
+- ログインフォームは HTML form + Server Actions（react-hook-form 不要）
+- Vercel は GitHub 連携（自動デプロイ）
+
+### Phase 2 で次にやること
+
+**公開ページ（記事一覧, 記事詳細, Markdown 表示）+ ダミーデータ**
+
+- [ ] ダミー記事データを Supabase に投入
+- [ ] 記事一覧ページ（`/articles`）— ISR
+- [ ] 記事詳細ページ（`/articles/[slug]`）— ISR
+- [ ] Markdown → HTML 変換（unified: remark + rehype）
+- [ ] シンタックスハイライト
+- [ ] ISR の再検証を本番（Vercel）で確認
+
+**Phase 2 の学びの核:**
+- SSG/ISR の使い分け（判断基準を要件ベースで語れるようにする）
+- RSC 境界設計（Server Component と Client Component の境界をどこに引くか）
+- ISR は Vercel 上で再検証を実際に確認する（ローカルでは完全に検証できない）
 
 ---
 
