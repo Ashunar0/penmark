@@ -1,19 +1,13 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { createClient as createServerClient } from "@/lib/supabase/server";
-import { createClient } from "@supabase/supabase-js";
+import { createPublicClient } from "@/lib/supabase/public";
 import { markdownToHtml } from "@/lib/markdown";
 import type { Article } from "@/lib/types";
 
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
-  // generateStaticParams はビルド時に実行されるため cookies() が使えない
-  // cookie 不要の素の Supabase クライアントを使う
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const supabase = createPublicClient();
   const { data: articles } = await supabase
     .from("articles")
     .select("slug")
@@ -30,7 +24,7 @@ export default async function ArticlePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = await createServerClient();
+  const supabase = createPublicClient();
   const { data: article } = await supabase
     .from("articles")
     .select("*")

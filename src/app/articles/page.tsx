@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { Article } from "@/lib/types";
 
 export const revalidate = 3600;
 
 export default async function ArticlesPage() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data: articles } = await supabase
     .from("articles")
     .select("id, slug, title, published_at, tags")
