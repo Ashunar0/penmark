@@ -4,8 +4,6 @@ import { createPublicClient } from "@/lib/supabase/public";
 import { markdownToHtml } from "@/lib/markdown";
 import type { Article } from "@/lib/types";
 
-export const revalidate = 3600;
-
 export async function generateStaticParams() {
   const supabase = createPublicClient();
   const { data: articles } = await supabase

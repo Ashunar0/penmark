@@ -2,8 +2,6 @@ import Link from "next/link";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { Article } from "@/lib/types";
 
-export const revalidate = 3600;
-
 export default async function ArticlesPage() {
   const supabase = createPublicClient();
   const { data: articles } = await supabase
