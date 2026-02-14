@@ -30,7 +30,16 @@ export async function updateSession(request: NextRequest) {
   );
 
   // refreshing the auth token
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // 未認証ユーザーが /editor にアクセスしたら /login にリダイレクト
+  if (!user && request.nextUrl.pathname.startsWith("/editor")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
 
   return supabaseResponse;
 }

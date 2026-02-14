@@ -218,20 +218,50 @@ src/
 │   │       └── page.tsx      # 記事詳細（ISR + generateStaticParams）← NEW
 ```
 
-### Phase 3 で次にやること
+### Phase 3 進行中（2026-02-14）
 
-**エディタ（記事作成・編集, Markdown プレビュー, 下書き/公開管理）**
+- [x] 記事作成ページ（`/editor`）— Server Component + Client Component
+- [x] 記事編集ページ（`/editor/[id]`）— Server Component でデータ取得 → props で渡す
+- [x] Markdown エディタ + リアルタイムプレビュー（react-markdown）
+- [x] 下書き / 公開のステータス管理（published_at は初回公開時のみセット、以降保持）
+- [x] ISR の on-demand revalidation（`revalidatePath()` で即座にキャッシュ更新、本番確認済み）
+- [x] ISR 戦略切り替え: time-based（revalidate=3600）→ on-demand のみに変更
+- [ ] 認証ガード — エディタページは管理者のみアクセス可能にする ← 次のセッションでやる
 
-- [ ] 記事作成ページ（`/editor`）— CSR
-- [ ] 記事編集ページ（`/editor/[id]`）— CSR
-- [ ] Markdown エディタ + リアルタイムプレビュー
-- [ ] 下書き / 公開のステータス管理
-- [ ] ISR の on-demand revalidation（記事公開時にトリガー）
+### Phase 3 での設計判断（詳細は学びの記録を参照）
 
-**Phase 3 の学びの核:**
-- CSR（Client Component 設計）— folio-v3 でやった CRUD と本質は同じだが、Server/Client の境界を意識
-- on-demand revalidation — エディタから記事公開時に `revalidatePath()` で ISR をトリガー
-- 認証ガード — エディタページは管理者のみアクセス可能にする
+- RSC 境界: page.tsx は Server Component（データ取得）、ArticleEditor は Client Component（UI）
+- 記事保存: Server Actions（`revalidatePath()` がサーバー側でしか呼べないため）
+- Markdown プレビュー: react-markdown（軽量、プレビューは「だいたいの確認」で十分）
+- slug: タイトルから自動生成（YAGNI）
+- published_at: 初回公開時にセット、下書きに戻しても保持（WordPress パターン）
+- ISR: on-demand のみ（全更新がエディタ経由なので time-based の保険は不要）
+
+### Phase 3 で追加されたファイル構成
+
+```
+src/
+├── lib/
+│   └── slug.ts              # slug 自動生成ユーティリティ ← NEW
+├── components/
+│   └── article-editor.tsx   # エディタ Client Component（Markdown プレビュー付き）← NEW
+├── app/
+│   └── editor/
+│       ├── actions.ts       # Server Actions（作成・更新 + revalidatePath）← NEW
+│       ├── page.tsx         # 新規作成ページ ← NEW
+│       └── [id]/
+│           └── page.tsx     # 編集ページ（Server Component でデータ取得）← NEW
+```
+
+### Phase 3 残タスク + Phase 4 以降
+
+**Phase 3 残り:**
+- [ ] 認証ガード（エディタページを管理者のみに制限。RLS が DB を守ってるので UX の問題）
+
+**Phase 4: SEO**
+- [ ] generateMetadata, OGP, sitemap.ts, robots.ts
+
+**Phase 5: トップページ, About, 仕上げ**
 
 ---
 
