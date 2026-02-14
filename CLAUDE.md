@@ -253,15 +253,33 @@ src/
 │           └── page.tsx     # 編集ページ（Server Component でデータ取得）← NEW
 ```
 
-### Phase 3 残タスク + Phase 4 以降
+### Phase 3 完了（2026-02-14）
 
-**Phase 3 残り:**
-- [ ] 認証ガード（エディタページを管理者のみに制限。RLS が DB を守ってるので UX の問題）
+- [x] 認証ガード — proxy.ts で未認証ユーザーを /login にリダイレクト
+- proxy.ts は `src/` 直下に配置（`src/app/` と同じ階層。ルート直下ではNG）
 
-**Phase 4: SEO**
-- [ ] generateMetadata, OGP, sitemap.ts, robots.ts
+### Phase 4 完了（2026-02-14）
 
-**Phase 5: トップページ, About, 仕上げ**
+- [x] robots.ts — /editor と /login を disallow
+- [x] sitemap.ts — 静的ページ + 公開記事を動的生成
+- [x] generateMetadata — ルートレイアウトに title.template、記事詳細に動的メタデータ
+- [x] OGP — openGraph + twitter メタデータ設定
+
+### Phase 5: トップページ, About, 仕上げ ← 次のセッションでやる
+
+**設計書:** `docs/plans/2026-02-14-phase5-design.md`
+**実装計画:** `docs/plans/2026-02-14-phase5-implementation.md`
+
+**概要:**
+- トップページ（`/`）: ランディングページ型（ヒーロー + 最新記事3件）、SSG
+- About（`/about`）: 自己紹介 + プロジェクト一覧（ハードコード）、SSG
+- 共通レイアウト: ヘッダー（Penmark + ナビ）+ フッター
+
+**8タスク構成:**
+1. 共通ヘッダー → 2. 共通フッター → 3. layout統合+コミット
+4. プロジェクトデータ定義 → 5. Aboutページ+コミット
+6. トップページ → 7. ISR連携（revalidatePath("/")追加）+コミット
+8. 全体確認+デプロイ
 
 ---
 
