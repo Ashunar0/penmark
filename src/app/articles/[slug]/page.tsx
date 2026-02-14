@@ -1,8 +1,41 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createPublicClient } from "@/lib/supabase/public";
 import { markdownToHtml } from "@/lib/markdown";
 import type { Article } from "@/lib/types";
+
+/** 記事タイトル・本文冒頭からページメタデータを動的に生成 */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = createPublicClient();
+  const { data: article } = await supabase
+    .from("articles")
+    .select("title, body_markdown")
+    .eq("slug", slug)
+    .eq("status", "published")
+    .single();
+
+  if (!article) return {};
+
+  const { title, body_markdown } = article as Pick<Article, "title" | "body_markdown">;
+  // 本文の先頭120文字を description に使用
+  const description = body_markdown.replace(/[#*`>\-\[\]()]/g, "").slice(0, 120).trim();
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+    },
+  };
+}
 
 export async function generateStaticParams() {
   const supabase = createPublicClient();

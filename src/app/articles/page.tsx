@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { Article } from "@/lib/types";
+
+export const metadata: Metadata = {
+  title: "Articles",
+  description: "技術記事の一覧",
+};
 
 export default async function ArticlesPage() {
   const supabase = createPublicClient();
